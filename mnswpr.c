@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
       int i = atoi(ptr);
       int j = atoi(input);
       Cell *cell = getCell(f, i, j);
-      if (cell) {
+      if (cell && !(cell->status == MARK_AS_MINE)) {
         cell->status = MARK_AS_MINE;
         game.mines_placed++;
       }
