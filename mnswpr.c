@@ -168,6 +168,15 @@ Game start() {
   return game;
 }
 
+Cell *getCell(Field *f, int i, int j) {
+  if (isInvalidCoordinates(i, j)) {
+    printf("ERROR: Invalid coordinates: i=%i, j=%i\n", i, j);
+    return NULL;
+  } else {
+    return &f->cels[i][j];
+  }
+}
+
 int main(int argc, char *argv[]) {
   Game game = start();
   Field *f = game.field;
@@ -190,43 +199,38 @@ int main(int argc, char *argv[]) {
 
     if (command == 'f') {
       input = &input[1];
-      char * ptr = strtok(input, ",");
+      char *ptr = strsep(&input, ",");
       int i = atoi(ptr);
       int j = atoi(input);
-      printf("%i", isInvalidCoordinates(i, j));
-      if (isInvalidCoordinates(i, j)) {
-        printf("ERROR: Invalid coordinates: i=%i, j=%i\n", i, j);
-        continue;
+      Cell *cell = getCell(f, i, j);
+      if (cell) {
+        cell->status = MARK_AS_MINE;
+        game.mines_placed++;
       }
-      f->cels[i][j].status = MARK_AS_MINE;
-      game.mines_placed++;
       printField(f, 0);
     } else if (command == 'q') {
       printf("Exiting\n");
       return EXIT_SUCCESS;
     } else {
-      char * ptr = strtok(input, ",");
+      char *ptr = strsep(&input, ",");
       int i = atoi(ptr);
       int j = atoi(input);
-      printf("%i", isInvalidCoordinates(i, j));
-      if (isInvalidCoordinates(i, j)) {
-        printf("ERROR: Invalid coordinates: i=%i, j=%i\n", i, j);
-        continue;
-      }
-
-      if (f->cels[i][j].value == -1) {
-        game.status = FINISHED;
-        printf("GAME OVER\n");
-        printField(f, 1);
-      } else if (f->cels[i][j].value == 0) {
-        batchOpen(f, i, j);
-        printField(f, 0);
-      } else {
-        if (f->cels[i][j].status == MARK_AS_MINE) {
-          game.mines_placed--;
+      Cell *cell = getCell(f, i, j);
+      if (cell) {
+        if (cell->value == -1) {
+          game.status = FINISHED;
+          printf("GAME OVER\n");
+          printField(f, 1);
+        } else if (cell->value == 0) {
+          batchOpen(f, i, j);
+          printField(f, 0);
+        } else {
+          if (cell->status == MARK_AS_MINE) {
+            game.mines_placed--;
+          }
+          cell->status = OPEN;
+          printField(f, 0);
         }
-        f->cels[i][j].status = OPEN;
-        printField(f, 0);
       }
     }
   }
